@@ -369,9 +369,45 @@ def main():
     print("\nPrevisioni ML (LightGBM) per il caso Normal (5 anni):")
     print(ml_forecast_df.to_string(index=False))
     
+    # --- 3.1 Previsione ML con LightGBM per il caso "worst" ---
+    anni_storici = 5
+    worst_params = scenari["worst"]
+    worst_df = proiezioni_finanziarie(worst_params["ricavo_iniziale"], worst_params["tasso_crescita"], worst_params["rapporto_costi"], anni_storici)
+    print("\nDati storici simulati per il caso Worst:")
+    print(worst_df.to_string(index=False))
+    
+    # Prevediamo i prossimi 5 anni (forecast)
+    X_future, ml_forecast_df, model = train_lightgbm_forecast(anni_storici, worst_params["ricavo_iniziale"],
+                                                              worst_params["tasso_crescita"], worst_params["rapporto_costi"],
+                                                              noise=0.05, anni_forecast=5)
+    print("\nPrevisioni ML (LightGBM) per il caso Worst (5 anni):")
+    print(ml_forecast_df.to_string(index=False))
+    
+    # --- 3.2 Previsione ML con LightGBM per il caso "best" ---
+    anni_storici = 5
+    best_params = scenari["best"]
+    best_df = proiezioni_finanziarie(best_params["ricavo_iniziale"], best_params["tasso_crescita"], best_params["rapporto_costi"], anni_storici)
+    print("\nDati storici simulati per il caso Best:")
+    print(best_df.to_string(index=False))
+    
+    # Prevediamo i prossimi 5 anni (forecast)
+    X_future, ml_forecast_df, model = train_lightgbm_forecast(anni_storici, best_params["ricavo_iniziale"],
+                                                              best_params["tasso_crescita"], best_params["rapporto_costi"],
+                                                              noise=0.05, anni_forecast=5)
+    print("\nPrevisioni ML (LightGBM) per il caso Best (5 anni):")
+    print(ml_forecast_df.to_string(index=False))
+    
     # --- 4. Visualizzazione interattiva delle simulazioni deterministiche e ML ---
     create_interactive_chart(scenari_data, capitale_iniziale)
     create_ml_vs_simulation_chart(scenari_data["normal"], ml_forecast_df, capitale_iniziale)
+    
+    # --- 4. Visualizzazione interattiva delle simulazioni deterministiche e ML ---
+    create_interactive_chart(scenari_data, capitale_iniziale)
+    create_ml_vs_simulation_chart(scenari_data["worst"], ml_forecast_df, capitale_iniziale)
+    
+    # --- 4. Visualizzazione interattiva delle simulazioni deterministiche e ML ---
+    create_interactive_chart(scenari_data, capitale_iniziale)
+    create_ml_vs_simulation_chart(scenari_data["best"], ml_forecast_df, capitale_iniziale)
     
     # --- 5. Simulazione Monte Carlo con Numba per 5 anni ---
     num_simulations = 1000  # Numero di simulazioni
