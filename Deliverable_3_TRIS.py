@@ -1011,27 +1011,32 @@ def create_dashboard():
     dashboard_html = get_interactive_plot()
     
     # Aggiunta sezione investimento iniziale
-    dashboard_html += """
+    dashboard_html += f"""
     <div style="margin-top: 20px; margin-bottom: 40px;">
         <div style="background-color:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:20px;">
             <h2 style="color:#2c3e50;">1. Investimento Iniziale</h2>
-            <p>Il capitale necessario per avviare la nostra fintech basata su chatbot AI è di <b>€{:,.0f}</b>, 
+            <p>Il capitale necessario per avviare la nostra fintech basata su chatbot AI è di <b>€{initial_investment:,.0f}</b>, 
             suddiviso nelle seguenti categorie principali:</p>
         </div>
-    """.format(initial_investment)
+    """
     
     # Grafico investimento
-    dashboard_html += """
+    dashboard_html += f"""
         <div id="investment-chart" style="width:100%;"></div>
         <script>
-            var investment_fig = {};
+            var investment_fig = {figures['investment'].to_json()};
             Plotly.newPlot('investment-chart', investment_fig.data, investment_fig.layout);
         </script>
     </div>
-    """.format(figures['investment'].to_json())
+    """
     
     # Aggiunta sezione stima dei costi
-    dashboard_html += """
+    costi_totali = (params['personale_tecnico'] + params['personale_supporto'] + 
+                   params['personale_conformita'] + params['cloud_hosting'] + 
+                   params['manutenzione_sistema'] + params['marketing_annuale'] + 
+                   params['formazione'])
+    
+    dashboard_html += f"""
     <div style="margin-top: 40px; margin-bottom: 40px;">
         <div style="background-color:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:20px;">
             <h2 style="color:#2c3e50;">2. Stima dei Costi</h2>
@@ -1051,35 +1056,35 @@ def create_dashboard():
                     <tbody>
                         <tr>
                             <td>Personale tecnico</td>
-                            <td>{:,.0f}</td>
+                            <td>{params['personale_tecnico']:,.0f}</td>
                         </tr>
                         <tr>
                             <td>Personale supporto</td>
-                            <td>{:,.0f}</td>
+                            <td>{params['personale_supporto']:,.0f}</td>
                         </tr>
                         <tr>
                             <td>Personale conformità</td>
-                            <td>{:,.0f}</td>
+                            <td>{params['personale_conformita']:,.0f}</td>
                         </tr>
                         <tr>
                             <td>Cloud e hosting</td>
-                            <td>{:,.0f}</td>
+                            <td>{params['cloud_hosting']:,.0f}</td>
                         </tr>
                         <tr>
                             <td>Manutenzione sistema</td>
-                            <td>{:,.0f}</td>
+                            <td>{params['manutenzione_sistema']:,.0f}</td>
                         </tr>
                         <tr>
                             <td>Marketing</td>
-                            <td>{:,.0f}</td>
+                            <td>{params['marketing_annuale']:,.0f}</td>
                         </tr>
                         <tr>
                             <td>Formazione</td>
-                            <td>{:,.0f}</td>
+                            <td>{params['formazione']:,.0f}</td>
                         </tr>
                         <tr>
                             <td><strong>Totale</strong></td>
-                            <td><strong>{:,.0f}</strong></td>
+                            <td><strong>{costi_totali:,.0f}</strong></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1088,27 +1093,16 @@ def create_dashboard():
                 <h4>Evoluzione Costi vs Ricavi</h4>
                 <div id="revenue-cost-chart" style="width:100%;"></div>
                 <script>
-                    var revenue_cost_fig = {};
+                    var revenue_cost_fig = {figures['revenue_cost'].to_json()};
                     Plotly.newPlot('revenue-cost-chart', revenue_cost_fig.data, revenue_cost_fig.layout);
                 </script>
             </div>
         </div>
     </div>
-    """.format(
-        params['personale_tecnico'],
-        params['personale_supporto'],
-        params['personale_conformita'],
-        params['cloud_hosting'],
-        params['manutenzione_sistema'],
-        params['marketing_annuale'],
-        params['formazione'],
-        params['personale_tecnico'] + params['personale_supporto'] + params['personale_conformita'] + 
-        params['cloud_hosting'] + params['manutenzione_sistema'] + params['marketing_annuale'] + params['formazione'],
-        figures['revenue_cost'].to_json()
-    )
+    """
     
     # Aggiunta sezione evoluzione clienti
-    dashboard_html += """
+    dashboard_html += f"""
     <div style="margin-top: 40px; margin-bottom: 40px;">
         <div style="background-color:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:20px;">
             <h2 style="color:#2c3e50;">3. Evoluzione Base Clienti</h2>
@@ -1117,45 +1111,44 @@ def create_dashboard():
         </div>
         <div id="customers-chart" style="width:100%;"></div>
         <script>
-            var customers_fig = {};
+            var customers_fig = {figures['customers'].to_json()};
             Plotly.newPlot('customers-chart', customers_fig.data, customers_fig.layout);
         </script>
     </div>
-    """.format(figures['customers'].to_json())
+    """
     
     # Aggiunta sezione proiezioni finanziarie
-    dashboard_html += """
+    be_normal = breakeven['normal'] if breakeven['normal'] is not None else float('inf')
+    be_worst = breakeven['worst'] if breakeven['worst'] is not None else float('inf')
+    be_best = breakeven['best'] if breakeven['best'] is not None else float('inf')
+    
+    dashboard_html += f"""
     <div style="margin-top: 40px; margin-bottom: 40px;">
         <div style="background-color:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:20px;">
             <h2 style="color:#2c3e50;">4. Proiezioni Finanziarie a 5 Anni</h2>
             <p>Le proiezioni finanziarie mostrano un percorso di crescita solido nei tre scenari considerati.
-               Il punto di break-even è previsto in {:.1f} anni nello scenario normale, 
-               {:.1f} anni in quello pessimistico e {:.1f} anni in quello ottimistico.</p>
+               Il punto di break-even è previsto in {be_normal:.1f} anni nello scenario normale, 
+               {be_worst:.1f} anni in quello pessimistico e {be_best:.1f} anni in quello ottimistico.</p>
         </div>
         <div id="cashflow-chart" style="width:100%;"></div>
         <script>
-            var cashflow_fig = {};
+            var cashflow_fig = {figures['cashflow'].to_json()};
             Plotly.newPlot('cashflow-chart', cashflow_fig.data, cashflow_fig.layout);
         </script>
     </div>
-    """.format(
-        breakeven['normal'] if breakeven['normal'] is not None else float('inf'),
-        breakeven['worst'] if breakeven['worst'] is not None else float('inf'),
-        breakeven['best'] if breakeven['best'] is not None else float('inf'),
-        figures['cashflow'].to_json()
-    )
+    """
     
-    # Aggiunta sezione Monte Carlo
-    dashboard_html += """
+    # Aggiunta sezione Monte Carlo - USANDO F-STRING PER EVITARE PROBLEMI DI FORMATTAZIONE
+    dashboard_html += f"""
     <div style="margin-top: 40px; margin-bottom: 40px;">
         <div style="background-color:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:20px;">
             <h2 style="color:#2c3e50;">5. Simulazione Monte Carlo</h2>
-            <p>La simulazione Monte Carlo con {0} iterazioni permette di valutare la distribuzione probabilistica
+            <p>La simulazione Monte Carlo con {params['num_simulations']} iterazioni permette di valutare la distribuzione probabilistica
                dei risultati finanziari, considerando la volatilità del mercato e l'incertezza delle proiezioni:</p>
         </div>
         <div id="mc-chart" style="width:100%;"></div>
         <script>
-            var mc_fig = {};
+            var mc_fig = {figures['mc'].to_json()};
             Plotly.newPlot('mc-chart', mc_fig.data, mc_fig.layout);
         </script>
         
@@ -1163,19 +1156,15 @@ def create_dashboard():
             <h4>Distribuzione Probabilistica dei Risultati (Anno 5)</h4>
             <div id="dist-chart" style="width:100%;"></div>
             <script>
-                var dist_fig = {};
+                var dist_fig = {figures['dist'].to_json()};
                 Plotly.newPlot('dist-chart', dist_fig.data, dist_fig.layout);
             </script>
         </div>
     </div>
-    """.format(
-        params['num_simulations'],
-        figures['mc'].to_json(),
-        figures['dist'].to_json()
-    )
+    """
     
     # Aggiunta sezione Analisi di Sensitività
-    dashboard_html += """
+    dashboard_html += f"""
     <div style="margin-top: 40px; margin-bottom: 40px;">
         <div style="background-color:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:20px;">
             <h2 style="color:#2c3e50;">6. Analisi di Sensitività</h2>
@@ -1184,14 +1173,14 @@ def create_dashboard():
         </div>
         <div id="sensitivity-chart" style="width:100%;"></div>
         <script>
-            var sensitivity_fig = {};
+            var sensitivity_fig = {figures['sensitivity'].to_json()};
             Plotly.newPlot('sensitivity-chart', sensitivity_fig.data, sensitivity_fig.layout);
         </script>
     </div>
-    """.format(figures['sensitivity'].to_json())
+    """
     
     # Aggiunta sezione ROI
-    dashboard_html += """
+    dashboard_html += f"""
     <div style="margin-top: 40px; margin-bottom: 40px;">
         <div style="background-color:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:20px;">
             <h2 style="color:#2c3e50;">7. Return on Investment (ROI)</h2>
@@ -1200,44 +1189,42 @@ def create_dashboard():
         </div>
         <div id="roi-chart" style="width:100%;"></div>
         <script>
-            var roi_fig = {};
+            var roi_fig = {figures['roi'].to_json()};
             Plotly.newPlot('roi-chart', roi_fig.data, roi_fig.layout);
         </script>
         
         <div style="margin-top: 30px;">
             <h4>Tabella di Probabilità</h4>
-            {}
+            {figures['probability_table']}
         </div>
     </div>
-    """.format(figures['roi'].to_json(), figures['probability_table'])
+    """
     
     # Aggiungi conclusioni
-    dashboard_html += """
+    roi_deterministico = (df_normal['cumulative_cashflow'].iloc[-1] + initial_investment) / initial_investment * 100 - 100
+    roi_mc = figures['mc_results']['success_analysis']['normal']['roi_median']
+    prob_roi_100 = figures['mc_results']['success_analysis']['normal']['prob_roi_100']
+    prob_exceed_50M = figures['mc_results']['success_analysis']['normal']['prob_exceed_50M']
+    
+    dashboard_html += f"""
     <div style="margin-top: 40px; margin-bottom: 40px;">
         <div style="background-color:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:20px;">
             <h2 style="color:#2c3e50;">8. Conclusioni</h2>
             <p>Dall'analisi emergono i seguenti punti chiave:</p>
             <ul>
-                <li>L'investimento iniziale di <b>€{:,.0f}</b> è significativo ma proporzionato al mercato fintech</li>
-                <li>Il break-even si prevede in {:.1f} anni nello scenario normale</li>
-                <li>Il ROI a 5 anni risulta del {:.1f}% nello scenario normale (deterministico) e del {:.1f}% (mediana Monte Carlo)</li>
+                <li>L'investimento iniziale di <b>€{initial_investment:,.0f}</b> è significativo ma proporzionato al mercato fintech</li>
+                <li>Il break-even si prevede in {be_normal:.1f} anni nello scenario normale</li>
+                <li>Il ROI a 5 anni risulta del {roi_deterministico:.1f}% nello scenario normale (deterministico) e del {roi_mc:.1f}% (mediana Monte Carlo)</li>
                 <li>La crescita della base clienti under 35 è il driver principale della redditività</li>
-                <li>La simulazione Monte Carlo mostra una probabilità del {:.1f}% di ottenere un ROI superiore al 100%</li>
-                <li>La probabilità di superare €50M di ricavi al quinto anno è del {:.1f}%</li>
+                <li>La simulazione Monte Carlo mostra una probabilità del {prob_roi_100:.1f}% di ottenere un ROI superiore al 100%</li>
+                <li>La probabilità di superare €50M di ricavi al quinto anno è del {prob_exceed_50M:.1f}%</li>
             </ul>
             <p>Il modello di business della fintech mostra solide potenzialità di crescita, con risultati 
                particolarmente positivi nel target under 35, caratterizzato da maggiore propensione all'adozione
                di soluzioni basate su AI e chatbot.</p>
         </div>
     </div>
-    """.format(
-        initial_investment,
-        breakeven['normal'] if breakeven['normal'] is not None else float('inf'),
-        (df_normal['cumulative_cashflow'].iloc[-1] + initial_investment) / initial_investment * 100 - 100,
-        figures['mc_results']['success_analysis']['normal']['roi_median'],
-        figures['mc_results']['success_analysis']['normal']['prob_roi_100'],
-        figures['mc_results']['success_analysis']['normal']['prob_exceed_50M']
-    )
+    """
     
     return dashboard_html
 
