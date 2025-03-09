@@ -83,7 +83,7 @@ params = {
     'best_factor': 1.3,               # Fattore moltiplicativo per scenario ottimistico
     
     # Simulazione Monte Carlo
-    'num_simulations': 2000,          # Numero di simulazioni Monte Carlo
+    'num_simulations': 1000000,          # Numero di simulazioni Monte Carlo
     'volatility': 0.25,               # Volatilità per simulazione Monte Carlo
     'volatility_worst': 0.35,         # Volatilità aumentata per scenario pessimistico
     'volatility_best': 0.20,          # Volatilità ridotta per scenario ottimistico
